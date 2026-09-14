@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: gamified3-backend
+    env: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gamified3-db
+          property: connectionString
+
+databases:
+  - name: gamified3-db
+    plan: free

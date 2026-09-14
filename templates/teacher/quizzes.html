@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Manage Quizzes — Teacher Portal{% endblock %}
+{% block page_title %}Quizzes{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h1>📝 Quizzes</h1>
+    <p>Manage multiple choice and conceptual quizzes</p>
+  </div>
+  <a href="{% url 'teacher_quiz_create' %}" class="btn btn-primary">➕ Create Quiz</a>
+</div>
+
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Difficulty</th>
+        <th>Questions</th>
+        <th>Time Limit</th>
+        <th>XP</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for quiz in quizzes %}
+      <tr>
+        <td style="font-weight:700;">{{ quiz.title }}</td>
+        <td><span class="badge badge-{{ quiz.difficulty|lower }}">{{ quiz.difficulty }}</span></td>
+        <td>{{ quiz.get_question_count }}</td>
+        <td>{{ quiz.time_limit_minutes }} min</td>
+        <td><span class="xp-badge">+{{ quiz.xp_reward }}</span></td>
+        <td>
+          <a href="{% url 'teacher_quiz_edit' quiz.id %}" class="btn btn-sm btn-outline">✏️ Edit</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);">
+          No quizzes found. Click "Create Quiz" to add one!
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

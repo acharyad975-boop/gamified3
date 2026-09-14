@@ -1,0 +1,36 @@
+{% extends "accounts/base_auth.html" %}
+{% block title %}Email Verification — Gamified Code Academy{% endblock %}
+{% block auth_content %}
+<div class="auth-container" style="max-width:440px;text-align:center;">
+  <div class="auth-card">
+    {% if status == 'success' %}
+      <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+      <h1 style="font-size:22px;font-weight:800;color:var(--success);margin-bottom:8px;">Email Verified!</h1>
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:24px;">Your email has been verified successfully. You can now log in and start your coding journey!</p>
+      <a href="{% url 'login' %}" class="btn btn-primary btn-lg w-full">🚀 Go to Login</a>
+    {% elif status == 'expired' %}
+      <div style="font-size:64px;margin-bottom:16px;">⏰</div>
+      <h1 style="font-size:22px;font-weight:800;color:var(--warning);margin-bottom:8px;">Link Expired</h1>
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:20px;">Your verification link has expired. Request a new one below.</p>
+      <button onclick="resendVerification('{{ email }}')" class="btn btn-primary w-full">📧 Resend Verification Email</button>
+    {% else %}
+      <div style="font-size:64px;margin-bottom:16px;">❌</div>
+      <h1 style="font-size:22px;font-weight:800;color:var(--danger);margin-bottom:8px;">Invalid Link</h1>
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:20px;">This verification link is invalid or has already been used.</p>
+      <a href="{% url 'login' %}" class="btn btn-secondary w-full">← Back to Login</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function resendVerification(email) {
+  const form = new FormData();
+  form.append('email', email);
+  form.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+  const resp = await fetch('/resend-verification/', { method: 'POST', body: form });
+  const data = await resp.json();
+  GCA.toast.show(data.success ? 'Sent!' : 'Error', data.message, data.success ? 'success' : 'error');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Quiz Results — Gamified Code Academy{% endblock %}
+{% block page_title %}Quiz Results{% endblock %}
+
+{% block content %}
+<div class="quiz-result-panel">
+  <div class="card" style="text-align:center;padding:40px 32px;margin-bottom:28px;">
+    {% if attempt.passed %}
+      <div style="font-size:64px;margin-bottom:12px;">🎉</div>
+      <h1 style="font-size:28px;font-weight:800;color:var(--success);margin-bottom:8px;">Quiz Passed!</h1>
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:24px;">Great work! You demonstrated solid understanding.</p>
+    {% else %}
+      <div style="font-size:64px;margin-bottom:12px;">📚</div>
+      <h1 style="font-size:28px;font-weight:800;color:var(--warning);margin-bottom:8px;">Keep Practicing!</h1>
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:24px;">You didn't pass this time, but review the answers and try again!</p>
+    {% endif %}
+
+    <div class="result-score-ring" style="--score-color: {% if attempt.passed %}var(--success){% else %}var(--warning){% endif %};">
+      <div class="result-score-inner">
+        <div class="result-pct">{{ attempt.percentage }}%</div>
+        <div class="result-label">{{ attempt.score }} / {{ attempt.max_score }} pts</div>
+      </div>
+    </div>
+
+    <div class="result-stats">
+      <div class="result-stat">
+        <span class="result-stat-icon">⚡</span>
+        <span class="result-stat-val">+{{ attempt.xp_earned }}</span>
+        <span class="result-stat-label">XP Earned</span>
+      </div>
+      <div class="result-stat">
+        <span class="result-stat-icon">🎯</span>
+        <span class="result-stat-val">{{ attempt.quiz.passing_score }}%</span>
+        <span class="result-stat-label">Passing Req</span>
+      </div>
+      <div class="result-stat">
+        <span class="result-stat-icon">⏱️</span>
+        <span class="result-stat-val">{{ attempt.started_at|timesince:attempt.completed_at }}</span>
+        <span class="result-stat-label">Time Taken</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;">
+      <a href="{% url 'quiz_start' attempt.quiz.id %}" class="btn btn-secondary">🔄 Retake Quiz</a>
+      <a href="{% url 'student_dashboard' %}" class="btn btn-primary">🏠 Back to Dashboard</a>
+    </div>
+  </div>
+
+  {% if answers %}
+  <div class="card">
+    <h3 style="font-size:18px;font-weight:800;margin-bottom:16px;">📋 Review Answers</h3>
+    {% for ans in answers %}
+    <div class="answer-review {% if ans.is_correct %}correct{% else %}wrong{% endif %}">
+      <div class="answer-review-header">
+        <span>{% if ans.is_correct %}✅{% else %}❌{% endif %}</span>
+        <strong style="color:var(--text-primary);">Q{{ forloop.counter }}: {{ ans.question.text }}</strong>
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-top:6px;">
+        Your answer: <strong>{{ ans.selected_answer }}</strong>
+        {% if not ans.is_correct %}
+          · Correct answer: <strong style="color:var(--success);">{{ ans.question.correct_answer }}</strong>
+        {% endif %}
+      </div>
+      {% if ans.question.explanation %}
+      <div class="answer-explanation">
+        💡 <strong>Explanation:</strong> {{ ans.question.explanation }}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

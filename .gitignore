@@ -1,0 +1,15 @@
+# Gamified Code Academy - .gitignore
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+*.sqlite3
+/media/
+/staticfiles/
+.DS_Store
+*.log
+node_modules/
+.venv/
+venv/
+dist/
+.vercel/

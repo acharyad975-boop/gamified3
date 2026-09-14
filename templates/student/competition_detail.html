@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ competition.name }} — Competition{% endblock %}
+{% block page_title %}Competition{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-16">
+  <a href="{% url 'competition_list' %}">Competitions</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">{{ competition.name }}</span>
+</div>
+
+<div class="card mb-24" style="padding:32px;background:var(--gradient-card);">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <h1 style="font-size:26px;font-weight:800;">{{ competition.name }}</h1>
+        <span class="badge badge-primary">{{ competition.get_status_display }}</span>
+      </div>
+      <p style="font-size:14px;color:var(--text-secondary);max-width:700px;">{{ competition.description }}</p>
+    </div>
+    <div>
+      {% if is_registered %}
+        <span class="badge badge-easy" style="font-size:14px;padding:8px 16px;">✅ Registered</span>
+      {% else %}
+        <button onclick="joinComp('{{ competition.slug }}')" id="join-btn" class="btn btn-primary btn-lg">
+          ⚡ Register for Competition
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid-4 mt-20" style="background:var(--bg-input);padding:16px;border-radius:var(--border-radius);border:1px solid var(--border);">
+    <div>
+      <div style="font-size:11px;color:var(--text-muted);">Starts</div>
+      <div style="font-size:14px;font-weight:700;margin-top:2px;">{{ competition.start_time|date:"M d, Y • H:i" }}</div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text-muted);">Ends</div>
+      <div style="font-size:14px;font-weight:700;margin-top:2px;">{{ competition.end_time|date:"M d, Y • H:i" }}</div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text-muted);">Participants</div>
+      <div style="font-size:14px;font-weight:700;margin-top:2px;">{{ participant_count }} registered</div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text-muted);">Rewards</div>
+      <div style="font-size:14px;font-weight:700;color:var(--gold);margin-top:2px;">👑 {{ competition.xp_reward_1st }} XP (1st)</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2 mb-24">
+  <!-- Challenges in Competition -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⌨️ Challenges</div>
+    </div>
+    {% if challenges %}
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      {% for challenge in challenges %}
+      <div style="padding:12px;background:var(--bg-input);border-radius:var(--border-radius);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-weight:700;font-size:14px;color:var(--text-primary);">{{ challenge.title }}</div>
+          <span class="badge badge-{{ challenge.difficulty|lower }}" style="font-size:10px;margin-top:4px;">{{ challenge.difficulty }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="xp-badge">+{{ challenge.xp_reward }}</span>
+          <a href="{% url 'challenge_detail' challenge.slug %}" class="btn btn-sm btn-primary">Solve →</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:20px;">
+      <p>Challenges will unlock once the competition begins.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Prize Structure -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🎁 Prize Structure</div>
+      <a href="{% url 'competition_leaderboard' competition.slug %}" class="section-link">Live Standings →</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:var(--border-radius);">
+        <span style="font-weight:700;">👑 1st Place</span>
+        <span class="xp-badge" style="background:rgba(255,215,0,0.2);color:var(--gold);border-color:var(--gold);">⚡ +{{ competition.xp_reward_1st }} XP</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(192,192,192,0.08);border:1px solid rgba(192,192,192,0.25);border-radius:var(--border-radius);">
+        <span style="font-weight:700;">🥈 2nd Place</span>
+        <span class="xp-badge" style="background:rgba(192,192,192,0.2);color:var(--silver);border-color:var(--silver);">⚡ +{{ competition.xp_reward_2nd }} XP</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(205,127,50,0.08);border:1px solid rgba(205,127,50,0.25);border-radius:var(--border-radius);">
+        <span style="font-weight:700;">🥉 3rd Place</span>
+        <span class="xp-badge" style="background:rgba(205,127,50,0.2);color:var(--bronze);border-color:var(--bronze);">⚡ +{{ competition.xp_reward_3rd }} XP</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--border-radius);">
+        <span style="color:var(--text-secondary);">Participant Reward</span>
+        <span class="xp-badge">⚡ +{{ competition.xp_reward_participant }} XP</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function joinComp(slug) {
+  const btn = document.getElementById('join-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner spinner-sm"></div> Registering...';
+  const data = await GCA.postJSON(`/competitions/${slug}/join/`, {});
+  if (data.success) {
+    GCA.toast.show('Registered!', data.message, 'success');
+    setTimeout(() => window.location.reload(), 1000);
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Register for Competition';
+    GCA.toast.show('Error', data.error, 'error');
+  }
+}
+</script>
+{% endblock %}

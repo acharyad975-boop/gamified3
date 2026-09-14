@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Student Roster — Teacher Portal{% endblock %}
+{% block page_title %}Students{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>👥 Student Roster</h1>
+  <p>Overview of all enrolled students and their progress</p>
+</div>
+
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Class</th>
+        <th>Level</th>
+        <th>Total XP</th>
+        <th>Challenges Solved</th>
+        <th>Quizzes Passed</th>
+        <th>Streak</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+      {% with profile=student.student_profile %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img src="{{ profile.get_avatar_url }}" alt="Avatar" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+            <div>
+              <div style="font-weight:700;font-size:14px;color:var(--text-primary);">
+                {% if student.get_full_name %}{{ student.get_full_name }}{% elif student.first_name %}{{ student.first_name }} {{ student.last_name }}{% else %}{{ student.username }}{% endif %}
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);">@{{ student.username }} &bull; {{ student.email }}</div>
+            </div>
+          </div>
+        </td>
+        <td>{{ profile.school_class|default:"—" }}</td>
+        <td><div class="level-badge level-badge-sm">{{ profile.current_level|default:1 }}</div></td>
+        <td><span class="xp-badge">⚡ {{ profile.total_xp|default:0 }}</span></td>
+        <td>{{ profile.challenges_completed|default:0 }}</td>
+        <td>{{ profile.quizzes_completed|default:0 }}</td>
+        <td>🔥 {{ profile.current_streak|default:0 }} days</td>
+        <td>
+          <a href="{% url 'public_profile' student.username %}" class="btn btn-sm btn-outline">Profile</a>
+        </td>
+      </tr>
+      {% endwith %}
+
+      {% empty %}
+      <tr>
+        <td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted);">
+          No students registered yet.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

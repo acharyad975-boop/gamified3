@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Manage Lessons — Teacher Portal{% endblock %}
+{% block page_title %}Lessons{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h1>📚 Lessons</h1>
+    <p>Create and edit curriculum lessons</p>
+  </div>
+  <a href="{% url 'teacher_lesson_create' %}" class="btn btn-primary">➕ Create Lesson</a>
+</div>
+
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Subject</th>
+        <th>Level</th>
+        <th>XP Reward</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for lesson in lessons %}
+      <tr>
+        <td style="font-weight:700;">{{ lesson.title }}</td>
+        <td>{{ lesson.level.subject.name }}</td>
+        <td>Level {{ lesson.level.number }}</td>
+        <td><span class="xp-badge">+{{ lesson.xp_reward }}</span></td>
+        <td>
+          {% if lesson.is_active %}
+            <span class="badge badge-easy">Active</span>
+          {% else %}
+            <span class="badge badge-medium">Draft</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'teacher_lesson_edit' lesson.id %}" class="btn btn-sm btn-outline">✏️ Edit</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);">
+          No lessons found. Click "Create Lesson" to add one!
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

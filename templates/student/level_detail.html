@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Level {{ level.number }}: {{ level.title }} — Gamified Code Academy{% endblock %}
+{% block page_title %}{{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-16">
+  <a href="{% url 'my_learning' %}">Learning</a>
+  <span class="breadcrumb-sep">/</span>
+  <a href="{% url 'subject_detail' subject.slug %}">{{ subject.name }}</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">Level {{ level.number }}: {{ level.title }}</span>
+</div>
+
+<div class="page-header" style="display:flex;align-items:center;gap:16px;">
+  <div class="level-badge level-badge-lg">{{ level.number }}</div>
+  <div>
+    <h1 style="font-size:24px;font-weight:800;">{{ level.title }}</h1>
+    <p>{{ level.description }}</p>
+  </div>
+</div>
+
+<div class="section mb-28">
+  <div class="section-header">
+    <div class="section-title">📚 Lessons in this Level</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    {% for item in lesson_data %}
+    <a href="{% url 'lesson_detail' item.lesson.id %}" class="lesson-card {% if item.is_completed %}completed{% endif %}" style="text-decoration:none;">
+      <div class="lesson-num" style="{% if item.is_completed %}background:rgba(0,200,150,0.15);border-color:rgba(0,200,150,0.4);color:var(--success);{% endif %}">
+        {% if item.is_completed %}✓{% else %}{{ forloop.counter }}{% endif %}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:2px;">
+          {{ item.lesson.title }}
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);">
+          {{ item.lesson.description|truncatechars:90 }}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="xp-badge">+{{ item.lesson.xp_reward }} XP</span>
+        {% if item.is_completed %}
+          <span class="badge badge-easy">Completed</span>
+        {% else %}
+          <span class="btn btn-sm btn-primary">Start →</span>
+        {% endif %}
+      </div>
+    </a>
+    {% empty %}
+    <div class="empty-state">
+      <div class="empty-state-icon">📖</div>
+      <h3>No lessons yet</h3>
+      <p>Lessons for this level are coming soon!</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if quizzes %}
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">📝 Level Quizzes</div>
+  </div>
+  <div class="cards-grid">
+    {% for quiz in quizzes %}
+    <div class="card">
+      <div class="flex-between mb-10">
+        <h3 style="font-size:16px;font-weight:700;">{{ quiz.title }}</h3>
+        <span class="badge badge-{{ quiz.difficulty|lower }}">{{ quiz.difficulty }}</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">{{ quiz.description|default:"Test your understanding of this level." }}</p>
+      <div class="flex-between">
+        <span class="xp-badge">+{{ quiz.xp_reward }} XP</span>
+        <a href="{% url 'quiz_start' quiz.id %}" class="btn btn-sm btn-primary">Take Quiz →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

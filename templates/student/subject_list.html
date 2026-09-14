@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}All Subjects — Gamified Code Academy{% endblock %}
+{% block page_title %}Subjects{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>🎯 All Subjects</h1>
+  <p>Explore computer science and programming domains</p>
+</div>
+
+<div class="cards-grid">
+  {% for subject in subjects %}
+  <a href="{% url 'subject_detail' subject.slug %}" class="subject-card"
+     style="--card-accent: {{ subject.bg_gradient }}; text-decoration:none;">
+    <div class="subject-icon">{{ subject.icon }}</div>
+    <div class="subject-name">{{ subject.name }}</div>
+    <div class="subject-desc" style="margin-bottom:14px;">{{ subject.description|truncatechars:90 }}</div>
+    <div class="flex-between" style="font-size:13px;color:var(--text-muted);margin-top:auto;">
+      <span>📖 {{ subject.levels.count }} Levels</span>
+      <span class="btn btn-sm btn-primary">Explore →</span>
+    </div>
+  </a>
+  {% empty %}
+  <div class="empty-state">
+    <div class="empty-state-icon">🎯</div>
+    <h3>No subjects available yet</h3>
+    <p>Check back soon for new courses!</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

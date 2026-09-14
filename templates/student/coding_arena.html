@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Coding Arena — Gamified Code Academy{% endblock %}
+{% block page_title %}Coding Arena{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>⌨️ Coding Arena</h1>
+  <p>Solve challenges, earn XP, and sharpen your skills</p>
+</div>
+
+<!-- Filters -->
+<div class="card mb-24" style="padding:16px;">
+  <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+    <div style="flex:1;min-width:200px;">
+      <label class="form-label" style="margin-bottom:4px;">Search</label>
+      <input type="text" name="q" value="{{ filters.q }}" class="form-control" placeholder="Search challenges...">
+    </div>
+    <div style="min-width:140px;">
+      <label class="form-label" style="margin-bottom:4px;">Difficulty</label>
+      <select name="difficulty" class="form-control">
+        <option value="">All</option>
+        <option value="EASY" {% if filters.difficulty == 'EASY' %}selected{% endif %}>Easy</option>
+        <option value="MEDIUM" {% if filters.difficulty == 'MEDIUM' %}selected{% endif %}>Medium</option>
+        <option value="HARD" {% if filters.difficulty == 'HARD' %}selected{% endif %}>Hard</option>
+      </select>
+    </div>
+    <div style="min-width:140px;">
+      <label class="form-label" style="margin-bottom:4px;">Subject</label>
+      <select name="subject" class="form-control">
+        <option value="">All</option>
+        {% for s in subjects %}
+        <option value="{{ s.slug }}" {% if filters.subject == s.slug %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="min-width:140px;">
+      <label class="form-label" style="margin-bottom:4px;">Language</label>
+      <select name="language" class="form-control">
+        <option value="">All</option>
+        {% for l in languages %}
+        <option value="{{ l.slug }}" {% if filters.language == l.slug %}selected{% endif %}>{{ l.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">🔍 Filter</button>
+    <a href="{% url 'coding_arena' %}" class="btn btn-secondary">Clear</a>
+  </form>
+</div>
+
+<!-- Challenge List -->
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width:40px;">#</th>
+        <th>Challenge</th>
+        <th>Subject</th>
+        <th>Language</th>
+        <th>Difficulty</th>
+        <th>XP</th>
+        <th>Solved By</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for challenge in challenges %}
+      <tr>
+        <td style="color:var(--text-muted);font-size:12px;">{{ forloop.counter }}</td>
+        <td>
+          <a href="{% url 'challenge_detail' challenge.slug %}" style="font-weight:600;color:var(--text-primary);">
+            {% if challenge.id in solved_ids %}✅ {% endif %}{{ challenge.title }}
+          </a>
+        </td>
+        <td><span style="font-size:12px;color:var(--text-muted);">{{ challenge.subject.name }}</span></td>
+        <td>
+          {% if challenge.language %}
+          <span class="badge badge-primary" style="font-size:10px;">{{ challenge.language.name }}</span>
+          {% else %}
+          <span style="font-size:12px;color:var(--text-muted);">Any</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge badge-{{ challenge.difficulty|lower }}">{{ challenge.difficulty }}</span>
+        </td>
+        <td><span class="xp-badge" style="font-size:11px;">+{{ challenge.xp_reward }}</span></td>
+        <td style="font-size:12px;color:var(--text-muted);">{{ challenge.accepted_count }}</td>
+        <td>
+          {% if challenge.id in solved_ids %}
+          <span class="badge badge-easy">Solved</span>
+          {% else %}
+          <span style="font-size:12px;color:var(--text-muted);">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);">
+          No challenges found. <a href="{% url 'coding_arena' %}">Clear filters</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

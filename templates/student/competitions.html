@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Competitions — Gamified Code Academy{% endblock %}
+{% block page_title %}Competitions{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>🏆 Coding Competitions</h1>
+  <p>Compete with others, win prizes and massive XP</p>
+</div>
+
+<!-- Live Competitions -->
+{% if live %}
+<div class="section mb-28">
+  <div class="section-header">
+    <div class="section-title" style="color:var(--coral);">🔴 LIVE Now</div>
+  </div>
+  <div class="cards-grid">
+    {% for comp in live %}
+    <div class="card" style="border-color:rgba(255,107,107,0.4);background:linear-gradient(135deg,rgba(255,107,107,0.06),var(--bg-card));">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+        <span class="badge" style="background:rgba(255,71,87,0.15);color:var(--danger);border:1px solid rgba(255,71,87,0.3);animation:pulse-glow 2s infinite;">● LIVE</span>
+        <span class="xp-badge">⚡ {{ comp.xp_reward_participant }}+ XP</span>
+      </div>
+      <h3 style="font-size:16px;font-weight:800;margin-bottom:6px;">{{ comp.name }}</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">{{ comp.description|truncatechars:80 }}</p>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+        👥 {{ comp.participants.count }} participants · Ends {{ comp.end_time|timesince }} ago
+      </div>
+      <div style="display:flex;gap:8px;">
+        <a href="{% url 'competition_detail' comp.slug %}" class="btn btn-danger flex-1">
+          {% if comp.id in joined_ids %}🚀 Enter Arena{% else %}⚡ Join Now{% endif %}
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Upcoming Competitions -->
+{% if upcoming %}
+<div class="section mb-28">
+  <div class="section-header">
+    <div class="section-title">📅 Upcoming</div>
+  </div>
+  <div class="cards-grid">
+    {% for comp in upcoming %}
+    <div class="card">
+      <div class="flex-between mb-12">
+        <span class="badge badge-cyan">📅 Upcoming</span>
+        <span class="xp-badge">⚡ {{ comp.xp_reward_participant }}+ XP</span>
+      </div>
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:6px;">{{ comp.name }}</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">{{ comp.description|truncatechars:70 }}</p>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+        🗓️ Starts {{ comp.start_time|date:"M d, Y • H:i" }}
+      </div>
+      <div style="display:flex;gap:8px;">
+        {% if comp.id in joined_ids %}
+        <button class="btn btn-success btn-sm flex-1" disabled>✅ Registered</button>
+        {% else %}
+        <button onclick="joinCompetition('{{ comp.slug }}')" class="btn btn-primary btn-sm flex-1" id="join-btn-{{ comp.slug }}">Register</button>
+        {% endif %}
+        <a href="{% url 'competition_detail' comp.slug %}" class="btn btn-secondary btn-sm">Details →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Completed Competitions -->
+{% if completed %}
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">✅ Past Competitions</div>
+  </div>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr><th>Competition</th><th>Date</th><th>Participants</th><th>Winner</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for comp in completed %}
+        <tr>
+          <td style="font-weight:600;">{{ comp.name }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ comp.end_time|date:"M d, Y" }}</td>
+          <td>{{ comp.participants.count }}</td>
+          <td>
+            {% with winner=comp.participants.filter.first %}
+            {% if winner %}👑 {{ winner.student.get_full_name }}{% else %}—{% endif %}
+            {% endwith %}
+          </td>
+          <td><a href="{% url 'competition_detail' comp.slug %}" style="font-size:12px;color:var(--text-link);">Results →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if not live and not upcoming and not completed %}
+<div class="empty-state">
+  <div class="empty-state-icon">🏆</div>
+  <h3>No competitions yet</h3>
+  <p>Check back soon for exciting coding competitions!</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function joinCompetition(slug) {
+  const btn = document.getElementById('join-btn-' + slug);
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner spinner-sm"></div>';
+  const data = await GCA.postJSON(`/student/competitions/${slug}/join/`, {});
+  if (data.success) {
+    btn.innerHTML = '✅ Registered!';
+    btn.className = 'btn btn-success btn-sm flex-1';
+    GCA.toast.show('Joined!', data.message, 'success');
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = 'Register';
+    GCA.toast.show('Error', data.error, 'error');
+  }
+}
+</script>
+{% endblock %}

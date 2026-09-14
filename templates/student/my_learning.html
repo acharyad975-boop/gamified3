@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}My Learning — Gamified Code Academy{% endblock %}
+{% block page_title %}My Learning{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📚 My Learning</h1>
+  <p>Continue your coding journey across all subjects</p>
+</div>
+
+<div class="cards-grid">
+  {% for item in subject_data %}
+  <a href="{% url 'subject_detail' item.subject.slug %}" class="subject-card"
+     style="--card-accent: {{ item.subject.bg_gradient }}; text-decoration:none;">
+    <div class="subject-icon">{{ item.subject.icon }}</div>
+    <div class="subject-name">{{ item.subject.name }}</div>
+    <div class="subject-desc" style="margin-bottom:14px;">{{ item.subject.description|truncatechars:70 }}</div>
+    <div class="progress-labeled">
+      <span class="label">{{ item.completed_lessons }}/{{ item.total_lessons }} lessons</span>
+      <span class="value">{{ item.progress_pct }}%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill primary" data-pct="{{ item.progress_pct }}"></div>
+    </div>
+    {% if item.progress_pct == 100 %}
+    <div style="margin-top:10px;"><span class="badge badge-easy">✅ Completed</span></div>
+    {% elif item.progress_pct > 0 %}
+    <div style="margin-top:10px;"><span class="badge badge-primary">In Progress</span></div>
+    {% else %}
+    <div style="margin-top:10px;"><span class="badge" style="background:var(--bg-input);color:var(--text-muted);border:1px solid var(--border);">Not Started</span></div>
+    {% endif %}
+  </a>
+  {% empty %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📚</div>
+    <h3>No subjects available</h3>
+    <p>Check back soon for new content!</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

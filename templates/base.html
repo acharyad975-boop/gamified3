@@ -1,0 +1,386 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{% block meta_description %}Gamified Code Academy - Learn programming through games, challenges, and competitions{% endblock %}">
+  <title>{% block title %}Gamified Code Academy{% endblock %}</title>
+
+  <!-- Preconnect for fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_css %}{% endblock %}
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+
+{% block full_page %}
+<!-- Sidebar Overlay (mobile) -->
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+<!-- Sidebar -->
+<nav id="main-sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">🚀</div>
+    <div class="sidebar-logo-text">
+      <span>Gamified</span><br>Code Academy
+    </div>
+  </div>
+
+  <!-- XP Widget (Students only) -->
+  {% if request.user.is_authenticated and request.user.is_student %}
+    {% with profile=request.user.student_profile %}
+    {% with xp_data=profile.get_xp_progress %}
+    <div class="sidebar-xp">
+      <div class="sidebar-xp-header">
+        <img src="{{ profile.get_avatar_url }}" alt="Avatar" class="sidebar-xp-avatar">
+        <div class="sidebar-xp-info">
+          <div class="sidebar-xp-name">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+          <div class="sidebar-xp-level">Level {{ profile.current_level }} · {{ profile.total_xp|floatformat:0 }} XP</div>
+        </div>
+        <div class="level-badge level-badge-sm">{{ profile.current_level }}</div>
+      </div>
+      <div class="sidebar-xp-bar">
+        <div class="sidebar-xp-fill" style="width:{{ xp_data.2 }}%"></div>
+      </div>
+      <div class="sidebar-xp-text">{{ xp_data.0 }} / {{ xp_data.1 }} XP to next level</div>
+    </div>
+    {% endwith %}
+    {% endwith %}
+  {% endif %}
+
+  <!-- Navigation -->
+  <div class="sidebar-nav">
+    {% if request.user.is_authenticated and request.user.is_student %}
+      <div class="sidebar-section-label">Main</div>
+      <a href="{% url 'student_dashboard' %}" class="nav-item" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a href="{% url 'my_learning' %}" class="nav-item" id="nav-learning">
+        <span class="nav-icon">📚</span> My Learning
+      </a>
+      <a href="{% url 'subject_list' %}" class="nav-item" id="nav-subjects">
+        <span class="nav-icon">🎯</span> Subjects
+      </a>
+      <a href="{% url 'quiz_list' %}" class="nav-item" id="nav-quizzes">
+        <span class="nav-icon">📝</span> Quizzes
+      </a>
+
+      <div class="sidebar-section-label">Compete</div>
+      <a href="{% url 'coding_arena' %}" class="nav-item" id="nav-coding">
+        <span class="nav-icon">⌨️</span> Coding Arena
+      </a>
+      <a href="{% url 'competition_list' %}" class="nav-item" id="nav-competitions">
+        <span class="nav-icon">🏆</span> Competitions
+      </a>
+      <a href="{% url 'leaderboard' %}" class="nav-item" id="nav-leaderboard">
+        <span class="nav-icon">📊</span> Leaderboard
+      </a>
+
+      <div class="sidebar-section-label">Rewards</div>
+      <a href="{% url 'achievements' %}" class="nav-item" id="nav-achievements">
+        <span class="nav-icon">🎖️</span> Achievements
+      </a>
+      <a href="{% url 'rewards_store' %}" class="nav-item" id="nav-rewards">
+        <span class="nav-icon">🎁</span> Rewards Store
+      </a>
+      <a href="{% url 'xp_history' %}" class="nav-item" id="nav-xp">
+        <span class="nav-icon">⚡</span> XP History
+      </a>
+
+      <div class="sidebar-section-label">Account</div>
+      <a href="{% url 'student_progress' %}" class="nav-item" id="nav-progress">
+        <span class="nav-icon">📈</span> My Progress
+      </a>
+      <a href="{% url 'public_profile' request.user.username %}" class="nav-item" id="nav-profile">
+        <span class="nav-icon">👤</span> Profile
+      </a>
+      <a href="{% url 'student_settings' %}" class="nav-item" id="nav-settings">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+
+    {% elif request.user.is_authenticated and request.user.is_teacher %}
+      <div class="sidebar-section-label">Teacher Portal</div>
+      <a href="{% url 'teacher_dashboard' %}" class="nav-item">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a href="{% url 'teacher_lessons' %}" class="nav-item">
+        <span class="nav-icon">📚</span> Lessons
+      </a>
+      <a href="{% url 'teacher_quizzes' %}" class="nav-item">
+        <span class="nav-icon">📝</span> Quizzes
+      </a>
+      <a href="{% url 'teacher_challenges' %}" class="nav-item">
+        <span class="nav-icon">⌨️</span> Challenges
+      </a>
+      <a href="{% url 'teacher_students' %}" class="nav-item">
+        <span class="nav-icon">👥</span> Students
+      </a>
+
+    {% elif request.user.is_authenticated and request.user.is_admin_user %}
+      <div class="sidebar-section-label">Admin Portal</div>
+      <a href="{% url 'admin_dashboard' %}" class="nav-item">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a href="{% url 'admin_users' %}" class="nav-item">
+        <span class="nav-icon">👥</span> Users
+      </a>
+      <a href="/django-admin/" class="nav-item">
+        <span class="nav-icon">⚙️</span> Django Admin
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    {% if request.user.is_authenticated %}
+      <a href="{% url 'logout' %}" class="nav-item" style="color:var(--coral);">
+        <span class="nav-icon">🚪</span> Logout
+      </a>
+    {% else %}
+      <a href="{% url 'login' %}" class="nav-item">
+        <span class="nav-icon">🔐</span> Login
+      </a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content">
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+
+    <div class="topbar-title">{% block page_title %}Gamified Code Academy{% endblock %}</div>
+
+    <!-- Search -->
+    <div class="topbar-search" role="search">
+      <span class="topbar-search-icon">🔍</span>
+      <input type="text" id="global-search" placeholder="Search challenges, lessons..." aria-label="Global search">
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <!-- Actions -->
+    <div class="topbar-actions">
+      <!-- Theme toggle -->
+      <button class="topbar-btn" id="theme-toggle" aria-label="Toggle theme" title="Toggle dark/light mode">🌙</button>
+
+      <!-- Notifications -->
+      {% if request.user.is_authenticated %}
+      <div style="position:relative;">
+        <button class="topbar-btn" data-dropdown-toggle="notif-dropdown" aria-label="Notifications">
+          🔔
+          {% if unread_notifications_count > 0 %}
+          <span class="notification-dot"></span>
+          {% endif %}
+        </button>
+        <div class="dropdown-menu" id="notif-dropdown" style="
+          position:absolute;right:0;top:calc(100% + 8px);
+          width:320px;background:var(--bg-card);border:1px solid var(--border);
+          border-radius:var(--border-radius-lg);padding:0;
+          box-shadow:var(--shadow-lg);z-index:var(--z-dropdown);display:none;
+        ">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:14px;">Notifications</span>
+            {% if unread_notifications_count > 0 %}
+            <button id="mark-all-read" style="font-size:12px;color:var(--text-link);background:none;border:none;cursor:pointer;">Mark all read</button>
+            {% endif %}
+          </div>
+          {% for notif in recent_notifications %}
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border-light);{% if not notif.is_read %}background:rgba(108,99,255,0.05);{% endif %}">
+            <div style="font-size:13px;font-weight:{% if not notif.is_read %}600{% else %}400{% endif %};color:var(--text-primary);">
+              {{ notif.icon }} {{ notif.title }}
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ notif.message|truncatechars:60 }}</div>
+          </div>
+          {% empty %}
+          <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No notifications</div>
+          {% endfor %}
+          {% if request.user.is_authenticated %}
+          <div style="padding:10px 16px;text-align:center;">
+            <a href="{% url 'notifications_list' %}" style="font-size:13px;color:var(--text-link);">View all notifications</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Avatar dropdown -->
+      <div style="position:relative;">
+        <button class="topbar-avatar-btn" data-dropdown-toggle="user-dropdown" aria-label="User menu">
+          {% if request.user.is_student and request.user.student_profile.avatar %}
+            <img src="{{ request.user.student_profile.avatar.url }}" alt="Avatar">
+          {% else %}
+            <div class="avatar-placeholder" style="width:100%;height:100%;font-size:16px;display:flex;align-items:center;justify-content:center;color:white;">
+              {{ request.user.first_name|first|upper }}
+            </div>
+          {% endif %}
+        </button>
+        <div class="dropdown-menu" id="user-dropdown" style="
+          position:absolute;right:0;top:calc(100% + 8px);
+          width:200px;background:var(--bg-card);border:1px solid var(--border);
+          border-radius:var(--border-radius-lg);padding:8px;
+          box-shadow:var(--shadow-lg);z-index:var(--z-dropdown);display:none;
+        ">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--border-light);margin-bottom:4px;">
+            <div style="font-weight:700;font-size:13px;">{{ request.user.get_full_name }}</div>
+            <div style="font-size:12px;color:var(--text-muted);">{{ request.user.role }}</div>
+          </div>
+          {% if request.user.is_student %}
+          <a href="{% url 'public_profile' request.user.username %}" class="nav-item" style="padding:8px 12px;font-size:13px;">👤 Profile</a>
+          <a href="{% url 'student_settings' %}" class="nav-item" style="padding:8px 12px;font-size:13px;">⚙️ Settings</a>
+          {% endif %}
+          <a href="{% url 'logout' %}" class="nav-item" style="padding:8px 12px;font-size:13px;color:var(--coral);">🚪 Logout</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Messages -->
+  {% if messages %}
+  <div style="position:fixed;bottom:24px;right:24px;z-index:var(--z-toast);display:flex;flex-direction:column;gap:10px;">
+    {% for message in messages %}
+    <div class="toast {% if message.tags %}{{ message.tags }}{% else %}success{% endif %}" style="transform:translateX(0);animation:none;">
+      <span class="toast-icon">
+        {% if 'error' in message.tags %}❌{% elif 'warning' in message.tags %}⚠️{% else %}✅{% endif %}
+      </span>
+      <div class="toast-content">
+        <div class="toast-title">{{ message }}</div>
+      </div>
+      <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px;margin-left:8px;">✕</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Page Body -->
+  <main class="page-body" role="main">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+{% endblock %}
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- Dropdown CSS -->
+<style>
+  .dropdown-menu { display: none; }
+  .dropdown-menu.open { display: block; }
+
+  /* Quiz styles */
+  .quiz-option {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; background: var(--bg-input); border: 2px solid var(--border);
+    border-radius: var(--border-radius); cursor: pointer; transition: var(--transition);
+    margin-bottom: 10px;
+  }
+  .quiz-option:hover { border-color: var(--primary); background: rgba(108,99,255,0.08); }
+  .quiz-option.selected { border-color: var(--primary); background: rgba(108,99,255,0.15); }
+  .option-key {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--bg-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: var(--text-secondary); flex-shrink: 0;
+  }
+  .quiz-option.selected .option-key { background: var(--primary); color: white; }
+  .option-text { font-size: 14px; color: var(--text-primary); }
+
+  .q-nav-dot {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--bg-input);
+    border: 2px solid var(--border); cursor: pointer; transition: var(--transition);
+    font-size: 10px; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); font-weight: 700;
+  }
+  .q-nav-dot.answered { background: rgba(108,99,255,0.2); border-color: var(--primary); color: var(--primary); }
+  .q-nav-dot.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+  .timer-warning { color: var(--danger) !important; animation: pulse-glow 1s ease infinite; }
+
+  .code-snippet-box {
+    background: var(--bg-code); border: 1px solid var(--border);
+    border-radius: var(--border-radius); margin: 16px 0; overflow: hidden;
+  }
+  .code-snippet-header { padding: 8px 14px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+  .code-snippet-pre { padding: 14px; margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #C8C6E0; overflow-x: auto; }
+
+  /* Quiz result */
+  .quiz-result-panel { max-width: 600px; margin: 0 auto; }
+  .result-score-ring {
+    width: 160px; height: 160px; border-radius: 50%;
+    border: 8px solid var(--score-color, var(--primary));
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px; box-shadow: 0 0 30px var(--score-color, var(--primary-glow));
+  }
+  .result-score-inner { text-align: center; }
+  .result-pct { font-size: 36px; font-weight: 900; }
+  .result-label { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
+  .result-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 24px; }
+  .result-stat { text-align: center; }
+  .result-stat-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+  .result-stat-val { font-size: 24px; font-weight: 800; color: var(--text-primary); display: block; }
+  .result-stat-label { font-size: 12px; color: var(--text-muted); }
+
+  .answer-review {
+    padding: 12px 16px; border-radius: var(--border-radius);
+    margin-bottom: 8px; border: 1px solid var(--border);
+  }
+  .answer-review.correct { border-color: rgba(0,200,150,0.3); background: rgba(0,200,150,0.05); }
+  .answer-review.wrong { border-color: rgba(255,71,87,0.3); background: rgba(255,71,87,0.05); }
+  .answer-review-header { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); }
+  .answer-explanation { font-size: 13px; color: var(--text-muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-light); }
+
+  /* AI Panel */
+  .ai-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .ai-panel-header h3 { font-size: 16px; font-weight: 700; }
+  .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .score-label { font-size: 13px; color: var(--text-secondary); width: 110px; flex-shrink: 0; }
+  .score-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .score-value { font-size: 12px; font-weight: 700; width: 40px; text-align: right; flex-shrink: 0; }
+  .complexity-row { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+  .complexity-badge { padding: 4px 12px; border: 1px solid var(--border); border-radius: var(--border-radius-pill); font-size: 13px; color: var(--text-secondary); }
+  .ai-feedback, .ai-suggestions { background: var(--bg-input); border-radius: var(--border-radius); padding: 14px; margin-top: 14px; }
+  .ai-feedback h4, .ai-suggestions h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-secondary); }
+  .ai-feedback p { font-size: 13px; color: var(--text-primary); line-height: 1.6; }
+
+  /* Submission result */
+  .submission-result-panel { border-radius: var(--border-radius); padding: 16px; margin-top: 16px; border: 2px solid var(--border); }
+  .submission-result-panel.accepted { border-color: rgba(0,200,150,0.4); background: rgba(0,200,150,0.05); }
+  .submission-result-panel.rejected { border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.05); }
+  .submission-status { display: flex; align-items: center; gap: 14px; }
+  .status-icon { font-size: 28px; }
+
+  /* Line numbers */
+  #line-numbers {
+    color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.7; padding: 16px 8px 16px 0;
+    text-align: right; user-select: none; min-width: 40px;
+    border-right: 1px solid var(--border); background: var(--bg-code);
+    white-space: pre; overflow: hidden;
+  }
+</style>
+
+<!-- Scripts -->
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+<!-- XP animation keyframe -->
+<style>
+  @keyframes xp-pop {
+    0%   { transform: scale(0.5) translateY(0); opacity: 0; }
+    50%  { transform: scale(1.3) translateY(-20px); opacity: 1; }
+    100% { transform: scale(1) translateY(-40px); opacity: 0; }
+  }
+</style>
+
+</body>
+</html>

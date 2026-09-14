@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}My Progress — Gamified Code Academy{% endblock %}
+{% block page_title %}My Progress{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📈 My Progress</h1>
+  <p>Track your learning journey</p>
+</div>
+
+<div class="grid-2 mb-24">
+  <!-- XP Over Time Chart -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⚡ XP Growth (30 days)</div>
+    </div>
+    <canvas id="xp-growth-chart" width="400" height="150"></canvas>
+  </div>
+
+  <!-- Level Progress -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🚀 Level Progress</div>
+    </div>
+    {% with xp_data=xp_progress %}
+    <div style="text-align:center;margin-bottom:16px;">
+      <div class="level-badge level-badge-lg animate-pulse-glow" style="margin:0 auto 12px;">{{ profile.current_level }}</div>
+      <div style="font-size:20px;font-weight:800;">Level {{ profile.current_level }}</div>
+      <div style="font-size:13px;color:var(--text-muted);">{{ profile.total_xp|floatformat:0 }} Total XP</div>
+    </div>
+    <div class="progress-bar progress-lg mb-8">
+      <div class="progress-fill primary" data-pct="{{ xp_data.2 }}"></div>
+    </div>
+    <div class="flex-between" style="font-size:12px;color:var(--text-muted);">
+      <span>{{ xp_data.0 }} XP in level</span>
+      <span>{{ xp_data.2 }}% to Level {{ profile.current_level|add:1 }}</span>
+    </div>
+    {% endwith %}
+  </div>
+</div>
+
+<!-- Subject Progress -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">📚 Progress by Subject</div>
+  </div>
+  <div class="card">
+    {% for item in subject_progress %}
+    <div class="skill-item">
+      <div class="skill-header">
+        <span class="skill-name">{{ item.subject.icon }} {{ item.subject.name }}</span>
+        <span class="skill-val">{{ item.completed }}/{{ item.total }} lessons · {{ item.pct }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill primary" data-pct="{{ item.pct }}"></div>
+      </div>
+    </div>
+    {% empty %}
+    <div style="text-align:center;padding:20px;color:var(--text-muted);">No subjects available.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid mt-24">
+  <div class="stat-card">
+    <div class="stat-icon purple">🔥</div>
+    <div>
+      <div class="stat-value">{{ profile.current_streak }}</div>
+      <div class="stat-label">Day Streak</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon gold">🏆</div>
+    <div>
+      <div class="stat-value">{{ profile.longest_streak }}</div>
+      <div class="stat-label">Best Streak</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon cyan">📊</div>
+    <div>
+      <div class="stat-value">{{ profile.quiz_score|floatformat:0 }}%</div>
+      <div class="stat-label">Avg Quiz Score</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">⌨️</div>
+    <div>
+      <div class="stat-value">{{ profile.challenges_completed }}</div>
+      <div class="stat-label">Challenges Solved</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const data = {{ xp_over_time|safe }};
+  const labels = data.map(d => d.day);
+  const values = data.map(d => d.xp);
+  GCA.drawMiniChart('xp-growth-chart', values, '#6C63FF');
+});
+</script>
+{% endblock %}

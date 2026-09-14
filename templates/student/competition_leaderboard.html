@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ competition.name }} — Leaderboard{% endblock %}
+{% block page_title %}Competition Standings{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-16">
+  <a href="{% url 'competition_list' %}">Competitions</a>
+  <span class="breadcrumb-sep">/</span>
+  <a href="{% url 'competition_detail' competition.slug %}">{{ competition.name }}</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">Leaderboard</span>
+</div>
+
+<div class="page-header">
+  <h1>🏆 {{ competition.name }} — Standings</h1>
+  <p>Live rankings for this competition</p>
+</div>
+
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width:60px;">Rank</th>
+        <th>Student</th>
+        <th>Score</th>
+        <th>Solved</th>
+        <th>Time Taken</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in participants %}
+      <tr {% if p.student.username == request.user.username %}style="background:rgba(108,99,255,0.08);"{% endif %}>
+        <td>
+          <div class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% endif %}">
+            {% if forloop.counter == 1 %}👑{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+          </div>
+        </td>
+        <td>
+          <div style="font-weight:700;font-size:14px;color:var(--text-primary);">
+            {{ p.student.get_full_name }}
+            {% if p.student.username == request.user.username %}
+              <span class="badge badge-primary" style="font-size:9px;margin-left:4px;">You</span>
+            {% endif %}
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);">@{{ p.student.username }}</div>
+        </td>
+        <td><span style="font-size:15px;font-weight:800;color:var(--primary-light);">{{ p.score }}</span></td>
+        <td>{{ p.solved_count }}</td>
+        <td style="font-size:12px;color:var(--text-muted);">{{ p.time_taken_seconds }}s</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+          No participants scored yet.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

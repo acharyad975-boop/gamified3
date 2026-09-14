@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}XP History — Gamified Code Academy{% endblock %}
+{% block page_title %}XP History{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>⚡ XP History</h1>
+  <p>All your XP transactions</p>
+</div>
+
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Description</th>
+        <th>XP</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tx in transactions %}
+      <tr>
+        <td>
+          <span class="badge {% if tx.amount > 0 %}badge-primary{% else %}badge-medium{% endif %}">
+            {{ tx.source }}
+          </span>
+        </td>
+        <td style="font-size:13px;color:var(--text-secondary);">{{ tx.description|truncatechars:60 }}</td>
+        <td>
+          <span style="font-size:15px;font-weight:800;color:{% if tx.amount > 0 %}var(--success){% else %}var(--danger){% endif %};">
+            {% if tx.amount > 0 %}+{% endif %}{{ tx.amount }}
+          </span>
+        </td>
+        <td style="font-size:12px;color:var(--text-muted);">{{ tx.created_at|date:"M d, Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">
+          No XP transactions yet. Start learning!
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

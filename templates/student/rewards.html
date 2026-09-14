@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Rewards Store — Gamified Code Academy{% endblock %}
+{% block page_title %}Rewards Store{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h1>🎁 Rewards Store</h1>
+    <p>Spend your XP on exclusive rewards and perks</p>
+  </div>
+  <div class="xp-badge" style="font-size:18px;padding:10px 20px;">
+    ⚡ <span id="user-xp" data-counter="{{ profile.total_xp }}">{{ profile.total_xp|floatformat:0 }}</span> XP available
+  </div>
+</div>
+
+<div class="cards-grid">
+  {% for reward in rewards %}
+  <div class="card {% if reward.id in purchased_ids %}purchased{% endif %}"
+       style="{% if reward.id in purchased_ids %}opacity:0.7;border-color:rgba(0,200,150,0.3);{% endif %}">
+    <div style="font-size:48px;text-align:center;margin-bottom:14px;">{{ reward.icon }}</div>
+    <div style="text-align:center;margin-bottom:8px;">
+      <div style="font-size:15px;font-weight:800;">{{ reward.name }}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">{{ reward.description }}</div>
+    </div>
+    <div class="flex-between" style="margin:14px 0;">
+      <span class="badge badge-{{ reward.reward_type|lower }}">{{ reward.get_reward_type_display }}</span>
+      <span class="xp-badge" style="font-size:15px;font-weight:800;">⚡ {{ reward.xp_cost }}</span>
+    </div>
+    {% if reward.id in purchased_ids %}
+    <button class="btn btn-success w-full" disabled>✅ Already Owned</button>
+    {% elif profile.total_xp >= reward.xp_cost %}
+    <button class="btn btn-gold w-full" onclick="purchaseReward({{ reward.id }}, {{ reward.xp_cost }}, '{{ reward.name|escapejs }}')"
+            id="buy-btn-{{ reward.id }}">
+      Buy for {{ reward.xp_cost }} XP
+    </button>
+    {% else %}
+    <button class="btn btn-secondary w-full" disabled title="Need {{ reward.xp_cost|add:'-'|add:profile.total_xp }} more XP">
+      🔒 Need {{ reward.xp_cost }} XP
+    </button>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="empty-state" style="grid-column:1/-1;">
+    <div class="empty-state-icon">🎁</div>
+    <h3>No rewards available yet</h3>
+    <p>Check back soon!</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentXP = {{ profile.total_xp }};
+
+async function purchaseReward(rewardId, cost, name) {
+  if (!confirm(`Purchase "${name}" for ${cost} XP?`)) return;
+
+  const btn = document.getElementById('buy-btn-' + rewardId);
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner spinner-sm"></div>';
+
+  const data = await GCA.postJSON(`/student/rewards/${rewardId}/purchase/`, {});
+
+  if (data.success) {
+    currentXP -= cost;
+    document.getElementById('user-xp').textContent = currentXP.toLocaleString();
+    btn.innerHTML = '✅ Purchased!';
+    btn.className = 'btn btn-success w-full';
+    GCA.toast.show('🎁 Reward Purchased!', `You got: ${name}`, 'success');
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = `Buy for ${cost} XP`;
+    GCA.toast.show('Purchase Failed', data.error, 'error');
+  }
+}
+</script>
+{% endblock %}

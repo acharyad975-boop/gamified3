@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ target_user.get_full_name }} (@{{ target_user.username }}) — Profile{% endblock %}
+{% block page_title %}Student Profile{% endblock %}
+
+{% block content %}
+<div class="card mb-24" style="padding:32px;background:var(--gradient-card);">
+  <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+    <img src="{{ profile.get_avatar_url }}" alt="{{ target_user.username }}"
+         style="width:96px;height:96px;border-radius:50%;border:4px solid var(--primary);object-fit:cover;box-shadow:var(--shadow-glow);">
+    <div style="flex:1;min-width:200px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
+        <h1 style="font-size:24px;font-weight:800;letter-spacing:-0.02em;">{{ target_user.get_full_name }}</h1>
+        <span class="badge badge-primary">@{{ target_user.username }}</span>
+        {% if target_user.username == request.user.username %}
+          <a href="{% url 'student_settings' %}" class="btn btn-sm btn-outline">✏️ Edit</a>
+        {% endif %}
+      </div>
+      <div style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">
+        {{ profile.bio|default:"Learning code step by step!" }}
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text-muted);">
+        {% if profile.school_class %}<span>🏫 {{ profile.school_class }}</span>{% endif %}
+        <span>📅 Member since {{ target_user.date_joined|date:"M Y" }}</span>
+        <span>🔥 {{ profile.current_streak }}-day streak</span>
+      </div>
+    </div>
+    <div class="level-badge level-badge-lg">{{ profile.current_level }}</div>
+  </div>
+</div>
+
+<div class="stats-grid mb-24">
+  <div class="stat-card">
+    <div class="stat-icon purple">⚡</div>
+    <div>
+      <div class="stat-value">{{ profile.total_xp }}</div>
+      <div class="stat-label">Total XP</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon cyan">⌨️</div>
+    <div>
+      <div class="stat-value">{{ profile.challenges_completed }}</div>
+      <div class="stat-label">Challenges</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon gold">📝</div>
+    <div>
+      <div class="stat-value">{{ profile.quizzes_completed }}</div>
+      <div class="stat-label">Quizzes</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">📚</div>
+    <div>
+      <div class="stat-value">{{ profile.lessons_completed }}</div>
+      <div class="stat-label">Lessons</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Achievements -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🏆 Unlocked Achievements</div>
+      <span class="xp-badge">{{ achievements|length }}</span>
+    </div>
+    {% if achievements %}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      {% for sa in achievements %}
+      <div style="text-align:center;padding:12px;background:var(--bg-input);border-radius:var(--border-radius);border:1px solid var(--border);"
+           title="{{ sa.achievement.description }}">
+        <div style="font-size:32px;margin-bottom:6px;">{{ sa.achievement.icon }}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text-primary);">{{ sa.achievement.name }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:20px;">
+      <div class="empty-state-icon">🏆</div>
+      <p>No achievements unlocked yet.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Submissions -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⌨️ Recent Submissions</div>
+    </div>
+    {% if recent_submissions %}
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      {% for sub in recent_submissions %}
+      <div style="padding:10px 14px;background:var(--bg-input);border-radius:var(--border-radius);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary);">{{ sub.challenge.title }}</div>
+          <div style="font-size:11px;color:var(--text-muted);">{{ sub.submitted_at|timesince }} ago</div>
+        </div>
+        <span class="badge {% if sub.status == 'ACCEPTED' %}badge-easy{% else %}badge-medium{% endif %}">
+          {{ sub.status|cut:'_' }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:20px;">
+      <div class="empty-state-icon">💻</div>
+      <p>No submissions recorded yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

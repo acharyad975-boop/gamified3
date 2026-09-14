@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Create Competition — Teacher Portal{% endblock %}
+{% block page_title %}New Competition{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-16">
+  <a href="{% url 'teacher_dashboard' %}">Teacher Portal</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">New Competition</span>
+</div>
+
+<div class="card" style="max-width:800px;margin:0 auto;padding:32px;">
+  <h1 style="font-size:22px;font-weight:800;margin-bottom:20px;">Create New Coding Competition</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">Competition Name *</label>
+      <input type="text" name="name" class="form-control" placeholder="e.g., Spring Code Sprint 2026" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description *</label>
+      <textarea name="description" class="form-control" rows="3" placeholder="Explain the rules and goals" required></textarea>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Start Time *</label>
+        <input type="datetime-local" name="start_time" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Time *</label>
+        <input type="datetime-local" name="end_time" class="form-control" required>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="form-group mb-0">
+        <label class="form-label">1st Place XP</label>
+        <input type="number" name="xp_reward_1st" class="form-control" value="1000" required>
+      </div>
+      <div class="form-group mb-0">
+        <label class="form-label">2nd Place XP</label>
+        <input type="number" name="xp_reward_2nd" class="form-control" value="500" required>
+      </div>
+      <div class="form-group mb-0">
+        <label class="form-label">Participant XP</label>
+        <input type="number" name="xp_reward_participant" class="form-control" value="100" required>
+      </div>
+    </div>
+
+    <div class="form-group mt-16">
+      <label class="form-label">Select Challenges to Include</label>
+      <select name="challenges" class="form-control" multiple size="5">
+        {% for c in challenges %}
+        <option value="{{ c.id }}">{{ c.title }} ({{ c.difficulty }})</option>
+        {% endfor %}
+      </select>
+      <div class="form-hint">Hold Ctrl / Cmd to select multiple challenges</div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:24px;">
+      <button type="submit" class="btn btn-primary">🚀 Launch Competition</button>
+      <a href="{% url 'teacher_dashboard' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

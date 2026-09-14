@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Manage Challenges — Teacher Portal{% endblock %}
+{% block page_title %}Challenges{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h1>⌨️ Coding Challenges</h1>
+    <p>Manage programming exercises and problem sets</p>
+  </div>
+  <a href="{% url 'teacher_challenge_create' %}" class="btn btn-primary">➕ Create Challenge</a>
+</div>
+
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Subject</th>
+        <th>Difficulty</th>
+        <th>XP</th>
+        <th>Solved Count</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for challenge in challenges %}
+      <tr>
+        <td style="font-weight:700;">{{ challenge.title }}</td>
+        <td>{{ challenge.subject.name }}</td>
+        <td><span class="badge badge-{{ challenge.difficulty|lower }}">{{ challenge.difficulty }}</span></td>
+        <td><span class="xp-badge">+{{ challenge.xp_reward }}</span></td>
+        <td>{{ challenge.get_accepted_count }}</td>
+        <td>
+          <a href="{% url 'teacher_challenge_edit' challenge.id %}" class="btn btn-sm btn-outline">✏️ Edit</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);">
+          No challenges found. Click "Create Challenge" to add one!
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

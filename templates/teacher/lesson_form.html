@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Lesson — Teacher Portal{% endblock %}
+{% block page_title %}{{ action }} Lesson{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-16">
+  <a href="{% url 'teacher_lessons' %}">Lessons</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">{{ action }} Lesson</span>
+</div>
+
+<div class="card" style="max-width:800px;margin:0 auto;padding:32px;">
+  <h1 style="font-size:22px;font-weight:800;margin-bottom:20px;">{{ action }} Lesson</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">Level *</label>
+      <select name="level_id" class="form-control" required>
+        {% for lvl in levels %}
+        <option value="{{ lvl.id }}" {% if lesson and lesson.level.id == lvl.id %}selected{% endif %}>
+          {{ lvl.subject.name }} - Level {{ lvl.number }}: {{ lvl.title }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Lesson Title *</label>
+      <input type="text" name="title" class="form-control" value="{{ lesson.title|default:'' }}" placeholder="e.g., Intro to Functions" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Short Description *</label>
+      <textarea name="description" class="form-control" rows="2" placeholder="Brief summary of what students will learn" required>{{ lesson.description|default:'' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Content (HTML formatted) *</label>
+      <textarea name="content" class="form-control" rows="8" placeholder="<h2>Welcome</h2><p>Lesson content goes here...</p>" required>{{ lesson.content|default:'' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Code Example (Optional)</label>
+      <textarea name="code_example" class="form-control" rows="5" placeholder="def greet():&#10;    print('Hello')">{{ lesson.code_example|default:'' }}</textarea>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group mb-0">
+        <label class="form-label">Code Language</label>
+        <input type="text" name="code_language" class="form-control" value="{{ lesson.code_language|default:'python' }}" placeholder="python">
+      </div>
+      <div class="form-group mb-0">
+        <label class="form-label">XP Reward *</label>
+        <input type="number" name="xp_reward" class="form-control" value="{{ lesson.xp_reward|default:50 }}" required>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:24px;">
+      <button type="submit" class="btn btn-primary">{{ action }} Lesson</button>
+      <a href="{% url 'teacher_lessons' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

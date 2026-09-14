@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Settings — Gamified Code Academy{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>⚙️ Account Settings</h1>
+  <p>Manage your profile and preferences</p>
+</div>
+
+<div class="grid-2">
+  <!-- Profile Settings -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:20px;">👤 Profile</div>
+
+    <!-- Avatar -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="position:relative;display:inline-block;">
+        <img src="{{ profile.get_avatar_url }}" alt="Avatar" id="avatar-preview"
+             style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);box-shadow:var(--shadow-glow);">
+        <label for="avatar-input" style="
+          position:absolute;bottom:0;right:0;
+          width:28px;height:28px;border-radius:50%;
+          background:var(--gradient-primary);
+          display:flex;align-items:center;justify-content:center;
+          cursor:pointer;font-size:12px;border:2px solid var(--bg-card);
+        ">✏️</label>
+        <input type="file" id="avatar-input" style="display:none;" accept="image/*" onchange="previewAvatar(this)">
+      </div>
+    </div>
+
+    <form id="profile-form">
+      {% csrf_token %}
+      <div class="grid-2" style="gap:12px;">
+        <div class="form-group mb-0">
+          <label class="form-label">First Name</label>
+          <input type="text" name="first_name" class="form-control" value="{{ request.user.first_name }}">
+        </div>
+        <div class="form-group mb-0">
+          <label class="form-label">Last Name</label>
+          <input type="text" name="last_name" class="form-control" value="{{ request.user.last_name }}">
+        </div>
+      </div>
+      <div style="height:14px;"></div>
+      <div class="form-group">
+        <label class="form-label">School / Class</label>
+        <input type="text" name="school_class" class="form-control" value="{{ profile.school_class }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <textarea name="bio" class="form-control" rows="3" placeholder="Tell us about yourself...">{{ profile.bio }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Theme</label>
+        <select name="theme" class="form-control">
+          <option value="dark" {% if profile.theme_preference == 'dark' %}selected{% endif %}>Dark Mode</option>
+          <option value="light" {% if profile.theme_preference == 'light' %}selected{% endif %}>Light Mode</option>
+        </select>
+      </div>
+      <button type="button" onclick="saveProfile()" class="btn btn-primary w-full">Save Profile</button>
+    </form>
+  </div>
+
+  <!-- Security -->
+  <div>
+    <div class="card mb-20">
+      <div class="card-title" style="margin-bottom:20px;">🔒 Change Password</div>
+      <form id="password-form">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input type="password" name="old_password" class="form-control" placeholder="Current password" autocomplete="current-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" name="new_password" id="new-pw" class="form-control" placeholder="Min 8 characters" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <input type="password" name="confirm_new" class="form-control" placeholder="Repeat new password" autocomplete="new-password">
+        </div>
+        <button type="button" onclick="changePassword()" class="btn btn-secondary w-full">Update Password</button>
+      </form>
+    </div>
+
+    <!-- Stats card -->
+    <div class="card" style="background:var(--gradient-card);">
+      <div class="card-title" style="margin-bottom:14px;">📊 Account Stats</div>
+      <div style="font-size:13px;color:var(--text-muted);">
+        <div class="flex-between mb-8"><span>Username</span><span style="color:var(--text-primary);font-weight:600;">{{ request.user.username }}</span></div>
+        <div class="flex-between mb-8"><span>Email</span><span style="color:var(--text-primary);font-weight:600;">{{ request.user.email }}</span></div>
+        <div class="flex-between mb-8"><span>Member since</span><span style="color:var(--text-primary);font-weight:600;">{{ request.user.date_joined|date:"M d, Y" }}</span></div>
+        <div class="flex-between mb-8"><span>Total XP</span><span class="xp-badge">{{ profile.total_xp|floatformat:0 }}</span></div>
+        <div class="flex-between"><span>Current Level</span><div class="level-badge level-badge-sm">{{ profile.current_level }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewAvatar(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById('avatar-preview').src = e.target.result;
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+async function saveProfile() {
+  const form = document.getElementById('profile-form');
+  const formData = new FormData(form);
+  const avatarInput = document.getElementById('avatar-input');
+  if (avatarInput.files[0]) formData.append('avatar', avatarInput.files[0]);
+  formData.set('action', 'update_profile');
+
+  const data = await GCA.postForm("{% url 'student_settings' %}", formData);
+  if (data.success) {
+    GCA.toast.show('Saved!', data.message, 'success');
+    // Apply theme
+    const theme = form.querySelector('[name=theme]').value;
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('gca-theme', theme);
+  } else {
+    GCA.toast.show('Error', data.message, 'error');
+  }
+}
+
+async function changePassword() {
+  const form = document.getElementById('password-form');
+  const newPw = form.querySelector('[name=new_password]').value;
+  const confirmPw = form.querySelector('[name=confirm_new]').value;
+  if (newPw !== confirmPw) {
+    GCA.toast.show('Error', 'Passwords do not match', 'error');
+    return;
+  }
+  const formData = new FormData(form);
+  formData.set('action', 'change_password');
+  const data = await GCA.postForm("{% url 'student_settings' %}", formData);
+  GCA.toast.show(data.success ? 'Done!' : 'Error', data.message, data.success ? 'success' : 'error');
+  if (data.success) form.reset();
+}
+</script>
+{% endblock %}

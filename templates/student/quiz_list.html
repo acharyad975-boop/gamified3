@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Quizzes — Gamified Code Academy{% endblock %}
+{% block page_title %}Quizzes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📝 Quizzes</h1>
+  <p>Test your knowledge and earn bonus XP</p>
+</div>
+
+<div class="cards-grid">
+  {% for quiz in quizzes %}
+  <div class="card">
+    <div class="flex-between mb-12">
+      <span class="badge badge-{{ quiz.difficulty|lower }}">{{ quiz.difficulty }}</span>
+      <span class="xp-badge">+{{ quiz.xp_reward }} XP</span>
+    </div>
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:6px;">{{ quiz.title }}</h3>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">{{ quiz.description|default:"Check your mastery of programming concepts." }}</p>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">
+      ⏱️ {{ quiz.time_limit_minutes }} mins · 🎯 Pass score: {{ quiz.passing_score }}%
+    </div>
+    <a href="{% url 'quiz_start' quiz.id %}" class="btn btn-primary w-full">Start Quiz →</a>
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📝</div>
+    <h3>No quizzes available</h3>
+    <p>Quizzes will appear here as lessons are added!</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ challenge.title }} — Gamified Code Academy{% endblock %}
+{% block page_title %}Coding Arena{% endblock %}
+
+{% block extra_css %}
+<style>
+  .challenge-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 0; height: calc(100vh - var(--topbar-height) - 48px); }
+  .challenge-problem { overflow-y: auto; border-right: 1px solid var(--border); padding: 20px; }
+  .challenge-editor { display: flex; flex-direction: column; }
+  .editor-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .code-editor { flex: 1; min-height: 300px; }
+  .output-section { border-top: 1px solid var(--border); padding: 12px; background: var(--bg-secondary); }
+  .tabs-sm { display: flex; gap: 4px; margin-bottom: 10px; }
+  .tab-sm { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; background: none; border: 1px solid var(--border); color: var(--text-muted); transition: var(--transition); }
+  .tab-sm.active { background: var(--primary); color: white; border-color: var(--primary); }
+  @media (max-width: 900px) { .challenge-layout { grid-template-columns: 1fr; height: auto; } .challenge-problem { border-right: none; border-bottom: 1px solid var(--border); max-height: 400px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin:-24px;padding-top:0;">
+
+  <!-- Challenge Header -->
+  <div style="padding:14px 20px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <a href="{% url 'coding_arena' %}" style="color:var(--text-muted);font-size:13px;">← Arena</a>
+    <span style="color:var(--border);">/</span>
+    <span style="font-size:15px;font-weight:700;color:var(--text-primary);">{{ challenge.title }}</span>
+    <span class="badge badge-{{ challenge.difficulty|lower }}">{{ challenge.difficulty }}</span>
+    {% if is_solved %}<span class="badge badge-easy">✅ Solved</span>{% endif %}
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span class="xp-badge">⚡ +{{ challenge.xp_reward }} XP</span>
+      <span style="font-size:12px;color:var(--text-muted);">Accepted: {{ acceptance_rate }}%</span>
+    </div>
+  </div>
+
+  <div class="challenge-layout">
+
+    <!-- LEFT: Problem -->
+    <div class="challenge-problem">
+      <div class="tabs-sm mb-16" id="problem-tabs">
+        <button class="tab-sm active" onclick="showTab('description')">📋 Problem</button>
+        <button class="tab-sm" onclick="showTab('examples')">💡 Examples</button>
+        <button class="tab-sm" onclick="showTab('submissions')">📊 My Submissions</button>
+      </div>
+
+      <!-- Description Tab -->
+      <div id="tab-description">
+        <div style="font-size:14px;line-height:1.8;color:var(--text-secondary);">
+          {{ challenge.description|linebreaks }}
+        </div>
+        {% if challenge.input_format %}
+        <div style="margin-top:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">📥 Input Format</div>
+          <div style="font-size:13px;color:var(--text-secondary);">{{ challenge.input_format|linebreaks }}</div>
+        </div>
+        {% endif %}
+        {% if challenge.output_format %}
+        <div style="margin-top:12px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">📤 Output Format</div>
+          <div style="font-size:13px;color:var(--text-secondary);">{{ challenge.output_format|linebreaks }}</div>
+        </div>
+        {% endif %}
+        {% if challenge.constraints %}
+        <div style="margin-top:12px;padding:12px;background:rgba(255,217,61,0.08);border:1px solid rgba(255,217,61,0.2);border-radius:8px;">
+          <div style="font-size:13px;font-weight:700;color:var(--warning);margin-bottom:6px;">⚠️ Constraints</div>
+          <div style="font-size:13px;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;">{{ challenge.constraints }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Public Test Cases -->
+        {% if public_tests %}
+        <div style="margin-top:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">🧪 Sample Test Cases</div>
+          {% for tc in public_tests %}
+          <div style="background:var(--bg-code);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">INPUT</div>
+                <pre style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#C8C6E0;margin:0;white-space:pre-wrap;">{{ tc.input_data|default:'(no input)' }}</pre>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--success);margin-bottom:4px;">EXPECTED OUTPUT</div>
+                <pre style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--success);margin:0;white-space:pre-wrap;">{{ tc.expected_output }}</pre>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if challenge.hints %}
+        <details style="margin-top:16px;">
+          <summary style="cursor:pointer;font-size:13px;font-weight:700;color:var(--warning);padding:10px;background:rgba(255,217,61,0.05);border-radius:8px;">💡 Show Hints</summary>
+          <div style="padding:12px;font-size:13px;color:var(--text-secondary);">{{ challenge.hints|linebreaks }}</div>
+        </details>
+        {% endif %}
+      </div>
+
+      <!-- Examples Tab -->
+      <div id="tab-examples" style="display:none;">
+        <div style="font-size:14px;color:var(--text-muted);font-size:13px;">{{ challenge.examples|default:'No examples provided.'|linebreaks }}</div>
+      </div>
+
+      <!-- Submissions Tab -->
+      <div id="tab-submissions" style="display:none;">
+        {% if my_submissions %}
+        {% for sub in my_submissions %}
+        <div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">
+          <div class="flex-between">
+            <span class="badge {% if sub.status == 'ACCEPTED' %}badge-easy{% elif sub.status == 'WRONG_ANSWER' %}badge-hard{% else %}badge-medium{% endif %}">
+              {{ sub.status|cut:'_' }}
+            </span>
+            <span style="font-size:12px;color:var(--text-muted);">{{ sub.submitted_at|timesince }} ago</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">
+            {{ sub.passed_tests }}/{{ sub.total_tests }} tests · {{ sub.language.name|default:'N/A' }}
+          </div>
+          <a href="{% url 'submission_detail' sub.id %}" style="font-size:12px;color:var(--text-link);">View Details →</a>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="text-align:center;padding:30px;color:var(--text-muted);">No submissions yet. Start coding!</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT: Editor -->
+    <div class="challenge-editor">
+      <div class="code-editor-wrapper" style="flex:1;border-radius:0;border:none;border-left:none;">
+        <div class="code-editor-header">
+          <div class="editor-dots">
+            <div class="editor-dot red"></div>
+            <div class="editor-dot yellow"></div>
+            <div class="editor-dot green"></div>
+          </div>
+          <select id="lang-selector" class="editor-lang-select">
+            {% for lang in languages %}
+            <option value="{{ lang.slug }}" {% if challenge.language and challenge.language.id == lang.id %}selected{% endif %}>{{ lang.name }}</option>
+            {% endfor %}
+          </select>
+          <div style="display:flex;gap:6px;margin-left:auto;">
+            <button id="analyze-btn" class="btn btn-secondary btn-sm">🤖 AI Analyze</button>
+            <button id="explain-btn" class="btn btn-secondary btn-sm">📖 Explain</button>
+            <button id="optimize-btn" class="btn btn-secondary btn-sm">⚡ Optimize</button>
+          </div>
+        </div>
+
+        <!-- Line numbers + Editor -->
+        <div style="display:flex;flex:1;overflow:hidden;">
+          <div id="line-numbers">1</div>
+          <textarea id="code-editor" class="code-editor" spellcheck="false" autocomplete="off"
+                    placeholder="Write your code here...">{{ challenge.starter_code }}</textarea>
+        </div>
+
+        <!-- Custom Input -->
+        <div style="padding:8px 12px;border-top:1px solid var(--border);background:var(--bg-secondary);">
+          <details>
+            <summary style="font-size:12px;color:var(--text-muted);cursor:pointer;">Custom Input</summary>
+            <textarea id="custom-input" style="width:100%;margin-top:8px;padding:8px;background:var(--bg-code);border:1px solid var(--border);border-radius:6px;color:#C8C6E0;font-family:'JetBrains Mono',monospace;font-size:12px;resize:vertical;min-height:60px;" placeholder="Enter custom input..."></textarea>
+          </details>
+        </div>
+      </div>
+
+      <!-- Editor Footer -->
+      <div class="editor-footer">
+        <button id="run-btn" class="btn btn-secondary">▶ Run Code</button>
+        <button id="submit-btn" class="btn btn-primary" style="margin-left:auto;">🚀 Submit</button>
+      </div>
+
+      <!-- Output -->
+      <div class="output-section">
+        <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px;">OUTPUT</div>
+        <div id="output-panel" class="output-panel" style="max-height:160px;min-height:80px;">
+          Click "Run Code" to test, or "Submit" for full evaluation.
+        </div>
+        <div id="submission-result-panel" style="display:none;"></div>
+      </div>
+
+      <!-- AI Panel -->
+      <div id="ai-panel" style="display:none;max-height:350px;overflow-y:auto;padding:16px;border-top:1px solid var(--border);background:var(--bg-card);">
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<input type="hidden" id="submission-id" value="">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/editor.js' %}"></script>
+<script>
+function showTab(name) {
+  ['description','examples','submissions'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab-sm').forEach((btn, i) => {
+    btn.classList.toggle('active', i === ['description','examples','submissions'].indexOf(name));
+  });
+}
+
+// Starter codes per language
+window.GCA_STARTER_CODES = {
+  python: `# Write your Python solution here\n\ndef solve():\n    # Read input\n    n = int(input())\n    \n    # Your solution\n    result = n\n    \n    print(result)\n\nsolve()`,
+  javascript: `// Write your JavaScript solution here\nconst lines = require('fs').readFileSync('/dev/stdin','utf8').split('\\n');\nlet idx = 0;\n\nconst n = parseInt(lines[idx++]);\n\n// Your solution here\nconsole.log(n);`,
+  c: `#include <stdio.h>\n\nint main() {\n    // Your solution here\n    int n;\n    scanf("%d", &n);\n    printf("%d\\n", n);\n    return 0;\n}`,
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  const editor = new CodeEditor({
+    textareaId: 'code-editor',
+    langSelectId: 'lang-selector',
+    runBtnId: 'run-btn',
+    submitBtnId: 'submit-btn',
+    outputPanelId: 'output-panel',
+    analyzeBtnId: 'analyze-btn',
+    explainBtnId: 'explain-btn',
+    optimizeBtnId: 'optimize-btn',
+    runUrl: "{% url 'run_code' challenge.slug %}",
+    submitUrl: "{% url 'submit_code' challenge.slug %}",
+    challengeSlug: "{{ challenge.slug }}",
+  });
+
+  // Update submission ID after submit
+  const origShowResult = editor.showSubmissionResult.bind(editor);
+  editor.showSubmissionResult = function(data) {
+    origShowResult(data);
+    if (data.submission_id) {
+      document.getElementById('submission-id').value = data.submission_id;
+    }
+  };
+});
+</script>
+{% endblock %}

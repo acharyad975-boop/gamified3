@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Challenge — Teacher Portal{% endblock %}
+{% block page_title %}{{ action }} Challenge{% endblock %}
+
+{% block content %}
+<div class="breadcrumb mb-16">
+  <a href="{% url 'teacher_challenges' %}">Challenges</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">{{ action }} Challenge</span>
+</div>
+
+<div class="card" style="max-width:800px;margin:0 auto;padding:32px;">
+  <h1 style="font-size:22px;font-weight:800;margin-bottom:20px;">{{ action }} Challenge</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Subject *</label>
+        <select name="subject_id" class="form-control" required>
+          {% for s in subjects %}
+          <option value="{{ s.id }}" {% if challenge and challenge.subject.id == s.id %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Language</label>
+        <select name="language_id" class="form-control">
+          <option value="">Any</option>
+          {% for l in languages %}
+          <option value="{{ l.id }}" {% if challenge and challenge.language.id == l.id %}selected{% endif %}>{{ l.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input type="text" name="title" class="form-control" value="{{ challenge.title|default:'' }}" placeholder="e.g., Reverse an Array" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description *</label>
+      <textarea name="description" class="form-control" rows="4" placeholder="Detailed problem statement" required>{{ challenge.description|default:'' }}</textarea>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Input Format</label>
+        <textarea name="input_format" class="form-control" rows="2" placeholder="e.g., First line: integer N">{{ challenge.input_format|default:'' }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Output Format</label>
+        <textarea name="output_format" class="form-control" rows="2" placeholder="e.g., Print the reversed array">{{ challenge.output_format|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="form-group mb-0">
+        <label class="form-label">Difficulty</label>
+        <select name="difficulty" class="form-control">
+          <option value="EASY" {% if challenge.difficulty == 'EASY' %}selected{% endif %}>Easy</option>
+          <option value="MEDIUM" {% if challenge.difficulty == 'MEDIUM' %}selected{% endif %}>Medium</option>
+          <option value="HARD" {% if challenge.difficulty == 'HARD' %}selected{% endif %}>Hard</option>
+        </select>
+      </div>
+      <div class="form-group mb-0">
+        <label class="form-label">XP Reward</label>
+        <input type="number" name="xp_reward" class="form-control" value="{{ challenge.xp_reward|default:100 }}" required>
+      </div>
+      <div class="form-group mb-0">
+        <label class="form-label">Time Limit (secs)</label>
+        <input type="number" name="time_limit_seconds" class="form-control" value="{{ challenge.time_limit_seconds|default:5 }}" required>
+      </div>
+    </div>
+
+    <div class="form-group mt-16">
+      <label class="form-label">Starter Code</label>
+      <textarea name="starter_code" class="form-control" rows="4" placeholder="# Write your starter code here">{{ challenge.starter_code|default:'' }}</textarea>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:24px;">
+      <button type="submit" class="btn btn-primary">{{ action }} Challenge</button>
+      <a href="{% url 'teacher_challenges' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Notifications — Gamified Code Academy{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h1>🔔 Notifications</h1>
+    <p>Stay updated on achievements, competitions, and progress</p>
+  </div>
+  {% if unread_notifications_count > 0 %}
+  <button id="mark-all-read-btn" class="btn btn-secondary btn-sm" onclick="markAllNotificationsRead()">
+    ✓ Mark All as Read
+  </button>
+  {% endif %}
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  {% for notif in notifications %}
+  <div class="notification-item" style="
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    {% if not notif.is_read %}background: rgba(108,99,255,0.06);{% endif %}
+  ">
+    <div style="font-size:24px;line-height:1;">{{ notif.icon }}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:14px;font-weight:{% if not notif.is_read %}700{% else %}600{% endif %};color:var(--text-primary);">
+          {{ notif.title }}
+        </span>
+        {% if not notif.is_read %}
+          <span class="badge badge-primary" style="font-size:9px;">NEW</span>
+        {% endif %}
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">{{ notif.message }}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">{{ notif.created_at|timesince }} ago</div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <div class="empty-state-icon">🔔</div>
+    <h3>No notifications yet</h3>
+    <p>We'll notify you about achievements, level-ups, and competitions here!</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function markAllNotificationsRead() {
+  const data = await GCA.postJSON('/api/notifications/mark-all-read/', {});
+  if (data.success) {
+    GCA.toast.show('Done', 'All notifications marked as read', 'success');
+    setTimeout(() => window.location.reload(), 800);
+  }
+}
+</script>
+{% endblock %}

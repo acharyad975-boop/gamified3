@@ -1,0 +1,306 @@
+{% extends "accounts/base_auth.html" %}
+{% load static %}
+
+{% block title %}Register with Real-Time Email OTP — Gamified Code Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+  .auth-card {
+    background: var(--bg-card, #1e1d2e);
+    border: 1px solid var(--border, rgba(108, 99, 255, 0.2));
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+  }
+
+  .input-with-action {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .input-with-action .input-icon-wrapper {
+    flex: 1;
+  }
+
+  /* OTP Interactive Box */
+  .otp-card-section {
+    display: none;
+    background: rgba(108, 99, 255, 0.06);
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    border-radius: 12px;
+    padding: 18px;
+    margin: 16px 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideDown 0.35s ease-out;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .otp-code-input-lg {
+    font-family: 'JetBrains Mono', Consolas, monospace !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    letter-spacing: 10px !important;
+    text-align: center !important;
+    color: var(--cyan, #00d4ff) !important;
+    background: rgba(13, 12, 26, 0.8) !important;
+    border: 2px solid rgba(108, 99, 255, 0.4) !important;
+    height: 48px;
+    border-radius: 10px;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+
+  .otp-code-input-lg:focus {
+    border-color: var(--cyan, #00d4ff) !important;
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.3) !important;
+    outline: none;
+  }
+
+  .otp-message {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+    display: none;
+    line-height: 1.4;
+  }
+
+  .otp-message.info {
+    background: rgba(108, 99, 255, 0.12);
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    color: var(--text-primary, #f0efff);
+  }
+
+  .otp-message.success {
+    background: rgba(0, 200, 150, 0.12);
+    border: 1px solid rgba(0, 200, 150, 0.4);
+    color: #34d399;
+  }
+
+  .otp-message.verified {
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid #10b981;
+    color: #10b981;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .otp-message.error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #f87171;
+  }
+
+  .verified-badge {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 200, 150, 0.15);
+    color: #00c896;
+    border: 1px solid rgba(0, 200, 150, 0.4);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+
+  .countdown-tag {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  .btn-locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2s infinite;
+  }
+
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.6); }
+    70% { box-shadow: 0 0 0 12px rgba(108, 99, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); }
+  }
+
+  .input-toggle-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    color: var(--text-muted, #a09ec0);
+    z-index: 5;
+  }
+</style>
+{% endblock %}
+
+{% block auth_content %}
+<div class="auth-container" style="max-width:560px;margin:20px auto;">
+  <div style="text-align:center;margin-bottom:24px;">
+    <div class="auth-logo-icon" style="margin:0 auto 10px;font-size:42px;">🚀</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-0.03em;">
+      Create Your <span class="text-gradient">Account</span>
+    </div>
+    <div style="font-size:14px;color:var(--text-muted);margin-top:4px;">
+      Real-Time Email Verification &bull; Fast &amp; Secure
+    </div>
+  </div>
+
+  <div class="auth-card">
+    <form method="post" enctype="multipart/form-data" id="register-form" novalidate>
+      {% csrf_token %}
+
+      <!-- Hidden verified token for secure server-side authorization -->
+      <input type="hidden" name="session_token" id="session_token" value="{{ form_data.session_token|default:'' }}">
+
+      <!-- Full Name -->
+      <div class="form-group mb-3">
+        <label class="form-label" for="full_name">Full Name *</label>
+        <div class="input-icon-wrapper" style="position:relative;">
+          <span class="input-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);">👤</span>
+          <input type="text" id="full_name" name="full_name" class="form-control {% if errors.first_name %}is-invalid{% endif %}"
+                 style="padding-left:38px;"
+                 value="{{ form_data.full_name|default:'' }}" placeholder="Alex Morgan" required autocomplete="name">
+        </div>
+        {% if errors.first_name %}<div class="form-error" style="color:#f87171;font-size:12px;margin-top:4px;">❌ {{ errors.first_name }}</div>{% endif %}
+      </div>
+
+      <!-- Email with Send OTP Button -->
+      <div class="form-group mb-3">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <label class="form-label mb-0" for="email" style="display:flex;align-items:center;">
+            Email Address *
+            <span id="email-verified-badge" class="verified-badge" {% if email_is_verified %}style="display:inline-flex;"{% endif %}>
+              ✓ Verified
+            </span>
+          </label>
+          <span style="font-size:12px;color:var(--text-muted);">Real-time verification</span>
+        </div>
+
+        <div class="input-with-action">
+          <div class="input-icon-wrapper" style="position:relative;flex:1;">
+            <span class="input-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);">📧</span>
+            <input type="email" id="email" name="email" class="form-control {% if errors.email %}is-invalid{% endif %}"
+                   style="padding-left:38px;"
+                   value="{{ form_data.email|default:'' }}" placeholder="you@example.com" required autocomplete="email"
+                   {% if email_is_verified %}readonly class="form-control is-verified"{% endif %}>
+          </div>
+          <button type="button" class="btn btn-primary" id="send-otp-btn" style="white-space:nowrap;padding:0 16px;">
+            ✉️ Send OTP
+          </button>
+        </div>
+        <!-- Always visible feedback container for email validation / send status -->
+        <div id="email-action-feedback" class="otp-message" style="margin-top:8px;"></div>
+        {% if errors.email %}<div class="form-error" style="color:#f87171;font-size:12px;margin-top:4px;">❌ {{ errors.email }}</div>{% endif %}
+        {% if errors.email_otp %}<div class="form-error" style="color:#f87171;font-size:12px;margin-top:4px;">⚠️ {{ errors.email_otp }}</div>{% endif %}
+      </div>
+
+
+      <!-- Interactive OTP Section (Appears after clicking Send OTP) -->
+      <div id="otp-section" class="otp-card-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:13px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:0.05em;">
+            🔑 Enter 6-Digit Email OTP
+          </span>
+          <span style="font-size:11px;color:var(--text-muted);">Expires in 5 minutes</span>
+        </div>
+
+        <!-- Real-time Status / Error Messages -->
+        <div id="otp-status-message" class="otp-message"></div>
+
+        <div style="margin-bottom:12px;">
+          <input type="text" id="otp-code-input" class="otp-code-input-lg" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autocomplete="one-time-code">
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button type="button" class="btn btn-success" id="verify-otp-btn" style="flex:2;justify-content:center;">
+            ✓ Verify OTP
+          </button>
+          <button type="button" class="btn btn-outline" id="resend-otp-btn" style="flex:1;justify-content:center;font-size:13px;" disabled>
+            <span>🔄 Resend OTP</span> <span class="countdown-tag" id="resend-countdown">(60s)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Password & Confirm Password -->
+      <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="form-group mb-0">
+          <label class="form-label" for="password">Password *</label>
+          <div class="input-icon-wrapper" style="position:relative;">
+            <span class="input-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);">🔒</span>
+            <input type="password" id="password" name="password" class="form-control {% if errors.password %}is-invalid{% endif %}"
+                   style="padding-left:38px;padding-right:38px;"
+                   placeholder="Min 8 characters" required autocomplete="new-password">
+            <button type="button" class="input-toggle-btn" onclick="togglePwd('password', this)">👁️</button>
+          </div>
+          {% if errors.password %}<div class="form-error" style="color:#f87171;font-size:12px;margin-top:4px;">❌ {{ errors.password }}</div>{% endif %}
+        </div>
+
+        <div class="form-group mb-0">
+          <label class="form-label" for="confirm_password">Confirm Password *</label>
+          <div class="input-icon-wrapper" style="position:relative;">
+            <span class="input-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);">🔒</span>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-control {% if errors.confirm_password %}is-invalid{% endif %}"
+                   style="padding-left:38px;padding-right:38px;"
+                   placeholder="Repeat password" required autocomplete="new-password">
+            <button type="button" class="input-toggle-btn" onclick="togglePwd('confirm_password', this)">👁️</button>
+          </div>
+          {% if errors.confirm_password %}<div class="form-error" style="color:#f87171;font-size:12px;margin-top:4px;">❌ {{ errors.confirm_password }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Password strength meter -->
+      <div id="pw-strength" style="display:none;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px;">
+          <span>Password strength:</span>
+          <span id="pw-strength-label" style="font-weight:700;">-</span>
+        </div>
+        <div style="height:6px;width:100%;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;">
+          <div id="pw-strength-bar" style="height:100%;width:0%;transition:width 0.3s ease, background-color 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Terms & Conditions -->
+      <div class="checkbox-group" style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <input type="checkbox" name="terms" id="terms" required {% if form_data.terms %}checked{% endif %} style="cursor:pointer;width:16px;height:16px;">
+        <label for="terms" style="font-size:13px;color:var(--text-secondary);cursor:pointer;margin:0;">
+          I agree to the <a href="#" style="color:var(--text-link);text-decoration:underline;">Terms of Service</a> and
+          <a href="#" style="color:var(--text-link);text-decoration:underline;">Privacy Policy</a>
+        </label>
+      </div>
+      {% if errors.terms %}<div class="form-error" style="color:#f87171;font-size:12px;margin-top:-14px;margin-bottom:16px;">❌ {{ errors.terms }}</div>{% endif %}
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn btn-primary w-full btn-lg {% if not email_is_verified %}btn-locked{% endif %}" id="register-btn" {% if not email_is_verified %}disabled{% endif %} style="justify-content:center;font-weight:700;font-size:16px;">
+        🚀 Complete Registration
+      </button>
+    </form>
+
+    <div style="text-align:center;margin-top:20px;font-size:14px;color:var(--text-muted);">
+      Already have an account?
+      <a href="{% url 'login' %}" style="color:var(--text-link);font-weight:600;margin-left:4px;">Sign in →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/register_otp.js' %}"></script>
+{% endblock %}

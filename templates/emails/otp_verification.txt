@@ -1,0 +1,14 @@
+Hello {{ full_name }},
+
+Your Email Verification Code
+
+Your OTP is:
+{{ otp_code }}
+
+This OTP will expire in {{ expiry_minutes }} minutes.
+
+Do not share this code with anyone.
+
+If you did not initiate this request, you can safely ignore this email.
+
+— Gamified Code Academy Team
