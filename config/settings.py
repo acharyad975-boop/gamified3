@@ -184,10 +184,17 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
 ]
 
-# Allow additional origins from environment (e.g. Vercel preview URLs)
+# Allow additional origins from environment (e.g. Firebase / Vercel URLs)
 _extra_origins = os.getenv('CORS_ALLOWED_ORIGINS_EXTRA', '')
 if _extra_origins:
     CORS_ALLOWED_ORIGINS += [o.strip() for o in _extra_origins.split(',') if o.strip()]
+
+# Firebase Hosting patterns (*.web.app and *.firebaseapp.com)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://[\w-]+\.web\.app$',
+    r'^https://[\w-]+\.firebaseapp\.com$',
+    r'^https://[\w-]+\.vercel\.app$',
+]
 
 # Allow all origins in DEBUG mode for convenience
 if DEBUG:

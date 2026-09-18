@@ -2,7 +2,11 @@
  * API Client for interacting with Django REST Framework backend.
  */
 
-const API_BASE = '/api';
+// In production (deployed to Firebase/Vercel), call Render backend directly.
+// In development, use relative /api which Vite proxies to localhost:8000.
+const IS_DEV = import.meta.env.DEV;
+const RENDER_BACKEND = import.meta.env.VITE_API_URL || 'https://gamified3-backend.onrender.com';
+const API_BASE = IS_DEV ? '/api' : `${RENDER_BACKEND}/api`;
 
 class ApiClient {
   constructor() {
