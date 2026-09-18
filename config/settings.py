@@ -182,6 +182,9 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    # Firebase Hosting
+    'https://gamified-code-academy.web.app',
+    'https://gamified-code-academy.firebaseapp.com',
 ]
 
 # Allow additional origins from environment (e.g. Firebase / Vercel URLs)
